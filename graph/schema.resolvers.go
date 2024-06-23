@@ -9,7 +9,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/lpc0503/Grocery-Tacker/graph/model"
+	"github.com/lpc0503/Grocery-Tracker/graph/model"
 )
 
 // RegisterUser is the resolver for the registerUser field.

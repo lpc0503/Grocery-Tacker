@@ -7,7 +7,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/lpc0503/Grocery-Tacker/graph"
+	"github.com/lpc0503/Grocery-Tracker/graph"
 )
 
 const defaultPort = "8080"
