@@ -1,0 +1,34 @@
+# User type and related operations
+type User {
+  userID: String!
+}
+
+# Grocery Item type and related operations
+type GroceryItem {
+  id: ID!
+  name: String!
+  quantity: Int
+  purchaseDate: String
+  addedDate: String
+  expirationDate: String
+  price: Float
+  materials: [String]
+  category: String
+}
+
+# Query type for fetching data
+type Query {
+  getUser(id: ID!): User
+  getUsers: [User]
+  getGroceryItem(id: ID!): GroceryItem
+  getGroceryItems: [GroceryItem]
+}
+
+# Mutation type for data operations
+type Mutation {
+  registerUser(userID: String!): User
+  loginUser(userID: String!): User # Returns a JWT token
+  addGroceryItem(name: String!, quantity: Int, purchaseDate: String, expirationDate: String, price: Float, materials: [String], category: String): GroceryItem
+  updateGroceryItem(id: ID!, name: String, quantity: Int, purchaseDate: String, expirationDate: String, price: Float, materials: [String], category: String): GroceryItem
+  deleteGroceryItem(id: ID!): Boolean!
+}
