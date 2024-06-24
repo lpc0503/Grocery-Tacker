@@ -4,26 +4,44 @@ import (
 	"context"
 	"testing"
 
+	"github.com/lpc0503/Grocery-Tracker/graph/model"
 	"github.com/stretchr/testify/assert"
 )
+
+var mockUsers = []*model.User{
+	{UserID: "user1"},
+	{UserID: "user2"},
+	{UserID: "user3"},
+}
+
+func createTestResovler() *Resolver {
+	return &Resolver{
+		users: mockUsers,
+	}
+}
 
 func TestRegisterUser(t *testing.T) {
 	resolver := &Resolver{}
 
-	user, err := resolver.Mutation().RegisterUser(context.TODO(), "Test123")
-	assert.NoError(t, err)
-	assert.NotNil(t, user)
-	assert.Equal(t, "Test123", user.UserID)
+	for index, user := range mockUsers {
+
+		registerUser, err := resolver.Mutation().RegisterUser(context.TODO(), user.UserID)
+		assert.NoError(t, err)
+		assert.NotNil(t, user)
+		assert.Equal(t, mockUsers[index].UserID, registerUser.UserID)
+	}
 }
 
 func TestLoginUser(t *testing.T) {
-	resolver := &Resolver{}
-	_, _ = resolver.Mutation().RegisterUser(context.TODO(), "Test234")
+	resolver := createTestResovler()
 
-	user, err := resolver.Mutation().LoginUser(context.TODO(), "Test234")
-	assert.NoError(t, err)
-	assert.NotNil(t, user)
-	assert.Equal(t, "Test234", user.UserID)
+	for index, user := range mockUsers {
+
+		loginUser, err := resolver.Mutation().LoginUser(context.TODO(), user.UserID)
+		assert.NoError(t, err)
+		assert.NotNil(t, user)
+		assert.Equal(t, mockUsers[index].UserID, loginUser.UserID)
+	}
 }
 
 func TestAddGroceryItem(t *testing.T) {
