@@ -6,5 +6,5 @@ import "github.com/lpc0503/Grocery-Tracker/graph/model"
 
 type Resolver struct {
 	users        []*model.User
-	groceryItems []*model.GroceryItem
+	groceryItems map[string][]*model.GroceryItem
 }

@@ -4,6 +4,7 @@ package model
 
 type GroceryItem struct {
 	ID             string    `json:"id"`
+	UserID         string    `json:"userID"`
 	Name           string    `json:"name"`
 	Quantity       *int      `json:"quantity,omitempty"`
 	PurchaseDate   *string   `json:"purchaseDate,omitempty"`

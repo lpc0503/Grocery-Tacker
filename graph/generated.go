@@ -57,21 +57,22 @@ type ComplexityRoot struct {
 		Price          func(childComplexity int) int
 		PurchaseDate   func(childComplexity int) int
 		Quantity       func(childComplexity int) int
+		UserID         func(childComplexity int) int
 	}
 
 	Mutation struct {
-		AddGroceryItem    func(childComplexity int, name string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) int
-		DeleteGroceryItem func(childComplexity int, id string) int
-		LoginUser         func(childComplexity int, userID string) int
-		RegisterUser      func(childComplexity int, userID string) int
-		UpdateGroceryItem func(childComplexity int, id string, name *string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) int
+		AddUserGroceryItem    func(childComplexity int, userID string, name string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) int
+		DeleteUserGroceryItem func(childComplexity int, userID string, id string) int
+		LoginUser             func(childComplexity int, userID string) int
+		RegisterUser          func(childComplexity int, userID string) int
+		UpdateUserGroceryItem func(childComplexity int, userID string, id string, name *string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) int
 	}
 
 	Query struct {
-		GetGroceryItem  func(childComplexity int, id string) int
-		GetGroceryItems func(childComplexity int) int
-		GetUser         func(childComplexity int, id string) int
-		GetUsers        func(childComplexity int) int
+		GetUser             func(childComplexity int, id string) int
+		GetUserGroceryItem  func(childComplexity int, userID string, id string) int
+		GetUserGroceryItems func(childComplexity int, userID string) int
+		GetUsers            func(childComplexity int) int
 	}
 
 	User struct {
@@ -82,15 +83,15 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	RegisterUser(ctx context.Context, userID string) (*model.User, error)
 	LoginUser(ctx context.Context, userID string) (*model.User, error)
-	AddGroceryItem(ctx context.Context, name string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) (*model.GroceryItem, error)
-	UpdateGroceryItem(ctx context.Context, id string, name *string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) (*model.GroceryItem, error)
-	DeleteGroceryItem(ctx context.Context, id string) (bool, error)
+	AddUserGroceryItem(ctx context.Context, userID string, name string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) (*model.GroceryItem, error)
+	UpdateUserGroceryItem(ctx context.Context, userID string, id string, name *string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) (*model.GroceryItem, error)
+	DeleteUserGroceryItem(ctx context.Context, userID string, id string) (bool, error)
 }
 type QueryResolver interface {
 	GetUser(ctx context.Context, id string) (*model.User, error)
 	GetUsers(ctx context.Context) ([]*model.User, error)
-	GetGroceryItem(ctx context.Context, id string) (*model.GroceryItem, error)
-	GetGroceryItems(ctx context.Context) ([]*model.GroceryItem, error)
+	GetUserGroceryItem(ctx context.Context, userID string, id string) (*model.GroceryItem, error)
+	GetUserGroceryItems(ctx context.Context, userID string) ([]*model.GroceryItem, error)
 }
 
 type executableSchema struct {
@@ -175,29 +176,36 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.GroceryItem.Quantity(childComplexity), true
 
-	case "Mutation.addGroceryItem":
-		if e.complexity.Mutation.AddGroceryItem == nil {
+	case "GroceryItem.userID":
+		if e.complexity.GroceryItem.UserID == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_addGroceryItem_args(context.TODO(), rawArgs)
+		return e.complexity.GroceryItem.UserID(childComplexity), true
+
+	case "Mutation.addUserGroceryItem":
+		if e.complexity.Mutation.AddUserGroceryItem == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addUserGroceryItem_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddGroceryItem(childComplexity, args["name"].(string), args["quantity"].(*int), args["purchaseDate"].(*string), args["expirationDate"].(*string), args["price"].(*float64), args["materials"].([]*string), args["category"].(*string)), true
+		return e.complexity.Mutation.AddUserGroceryItem(childComplexity, args["userID"].(string), args["name"].(string), args["quantity"].(*int), args["purchaseDate"].(*string), args["expirationDate"].(*string), args["price"].(*float64), args["materials"].([]*string), args["category"].(*string)), true
 
-	case "Mutation.deleteGroceryItem":
-		if e.complexity.Mutation.DeleteGroceryItem == nil {
+	case "Mutation.deleteUserGroceryItem":
+		if e.complexity.Mutation.DeleteUserGroceryItem == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_deleteGroceryItem_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_deleteUserGroceryItem_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteGroceryItem(childComplexity, args["id"].(string)), true
+		return e.complexity.Mutation.DeleteUserGroceryItem(childComplexity, args["userID"].(string), args["id"].(string)), true
 
 	case "Mutation.loginUser":
 		if e.complexity.Mutation.LoginUser == nil {
@@ -223,36 +231,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.RegisterUser(childComplexity, args["userID"].(string)), true
 
-	case "Mutation.updateGroceryItem":
-		if e.complexity.Mutation.UpdateGroceryItem == nil {
+	case "Mutation.updateUserGroceryItem":
+		if e.complexity.Mutation.UpdateUserGroceryItem == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_updateGroceryItem_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_updateUserGroceryItem_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateGroceryItem(childComplexity, args["id"].(string), args["name"].(*string), args["quantity"].(*int), args["purchaseDate"].(*string), args["expirationDate"].(*string), args["price"].(*float64), args["materials"].([]*string), args["category"].(*string)), true
-
-	case "Query.getGroceryItem":
-		if e.complexity.Query.GetGroceryItem == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getGroceryItem_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.GetGroceryItem(childComplexity, args["id"].(string)), true
-
-	case "Query.getGroceryItems":
-		if e.complexity.Query.GetGroceryItems == nil {
-			break
-		}
-
-		return e.complexity.Query.GetGroceryItems(childComplexity), true
+		return e.complexity.Mutation.UpdateUserGroceryItem(childComplexity, args["userID"].(string), args["id"].(string), args["name"].(*string), args["quantity"].(*int), args["purchaseDate"].(*string), args["expirationDate"].(*string), args["price"].(*float64), args["materials"].([]*string), args["category"].(*string)), true
 
 	case "Query.getUser":
 		if e.complexity.Query.GetUser == nil {
@@ -265,6 +254,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetUser(childComplexity, args["id"].(string)), true
+
+	case "Query.getUserGroceryItem":
+		if e.complexity.Query.GetUserGroceryItem == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getUserGroceryItem_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetUserGroceryItem(childComplexity, args["userID"].(string), args["id"].(string)), true
+
+	case "Query.getUserGroceryItems":
+		if e.complexity.Query.GetUserGroceryItems == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getUserGroceryItems_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetUserGroceryItems(childComplexity, args["userID"].(string)), true
 
 	case "Query.getUsers":
 		if e.complexity.Query.GetUsers == nil {
@@ -403,91 +416,7 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_addGroceryItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["name"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["name"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["quantity"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["quantity"] = arg1
-	var arg2 *string
-	if tmp, ok := rawArgs["purchaseDate"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("purchaseDate"))
-		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["purchaseDate"] = arg2
-	var arg3 *string
-	if tmp, ok := rawArgs["expirationDate"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expirationDate"))
-		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["expirationDate"] = arg3
-	var arg4 *float64
-	if tmp, ok := rawArgs["price"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
-		arg4, err = ec.unmarshalOFloat2ᚖfloat64(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["price"] = arg4
-	var arg5 []*string
-	if tmp, ok := rawArgs["materials"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("materials"))
-		arg5, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["materials"] = arg5
-	var arg6 *string
-	if tmp, ok := rawArgs["category"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
-		arg6, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["category"] = arg6
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteGroceryItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_loginUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_addUserGroceryItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -499,40 +428,10 @@ func (ec *executionContext) field_Mutation_loginUser_args(ctx context.Context, r
 		}
 	}
 	args["userID"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_registerUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["userID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["userID"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateGroceryItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 *string
+	var arg1 string
 	if tmp, ok := rawArgs["name"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -595,6 +494,147 @@ func (ec *executionContext) field_Mutation_updateGroceryItem_args(ctx context.Co
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_deleteUserGroceryItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userID"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_loginUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userID"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_registerUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userID"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateUserGroceryItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userID"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["quantity"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["quantity"] = arg3
+	var arg4 *string
+	if tmp, ok := rawArgs["purchaseDate"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("purchaseDate"))
+		arg4, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["purchaseDate"] = arg4
+	var arg5 *string
+	if tmp, ok := rawArgs["expirationDate"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("expirationDate"))
+		arg5, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["expirationDate"] = arg5
+	var arg6 *float64
+	if tmp, ok := rawArgs["price"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
+		arg6, err = ec.unmarshalOFloat2ᚖfloat64(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["price"] = arg6
+	var arg7 []*string
+	if tmp, ok := rawArgs["materials"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("materials"))
+		arg7, err = ec.unmarshalOString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["materials"] = arg7
+	var arg8 *string
+	if tmp, ok := rawArgs["category"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
+		arg8, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["category"] = arg8
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -610,18 +650,42 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getGroceryItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_getUserGroceryItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+	if tmp, ok := rawArgs["userID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["id"] = arg0
+	args["userID"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getUserGroceryItems_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["userID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userID"] = arg0
 	return args, nil
 }
 
@@ -717,6 +781,50 @@ func (ec *executionContext) fieldContext_GroceryItem_id(_ context.Context, field
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _GroceryItem_userID(ctx context.Context, field graphql.CollectedField, obj *model.GroceryItem) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_GroceryItem_userID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_GroceryItem_userID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "GroceryItem",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1078,7 +1186,7 @@ func (ec *executionContext) _Mutation_registerUser(ctx context.Context, field gr
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_registerUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1134,7 +1242,7 @@ func (ec *executionContext) _Mutation_loginUser(ctx context.Context, field graph
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1165,8 +1273,8 @@ func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_addGroceryItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_addGroceryItem(ctx, field)
+func (ec *executionContext) _Mutation_addUserGroceryItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addUserGroceryItem(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1179,7 +1287,7 @@ func (ec *executionContext) _Mutation_addGroceryItem(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddGroceryItem(rctx, fc.Args["name"].(string), fc.Args["quantity"].(*int), fc.Args["purchaseDate"].(*string), fc.Args["expirationDate"].(*string), fc.Args["price"].(*float64), fc.Args["materials"].([]*string), fc.Args["category"].(*string))
+		return ec.resolvers.Mutation().AddUserGroceryItem(rctx, fc.Args["userID"].(string), fc.Args["name"].(string), fc.Args["quantity"].(*int), fc.Args["purchaseDate"].(*string), fc.Args["expirationDate"].(*string), fc.Args["price"].(*float64), fc.Args["materials"].([]*string), fc.Args["category"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1190,10 +1298,10 @@ func (ec *executionContext) _Mutation_addGroceryItem(ctx context.Context, field 
 	}
 	res := resTmp.(*model.GroceryItem)
 	fc.Result = res
-	return ec.marshalOGroceryItem2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐGroceryItem(ctx, field.Selections, res)
+	return ec.marshalOGroceryItem2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐGroceryItem(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_addGroceryItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_addUserGroceryItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1203,6 +1311,8 @@ func (ec *executionContext) fieldContext_Mutation_addGroceryItem(ctx context.Con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_GroceryItem_id(ctx, field)
+			case "userID":
+				return ec.fieldContext_GroceryItem_userID(ctx, field)
 			case "name":
 				return ec.fieldContext_GroceryItem_name(ctx, field)
 			case "quantity":
@@ -1230,15 +1340,15 @@ func (ec *executionContext) fieldContext_Mutation_addGroceryItem(ctx context.Con
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_addGroceryItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_addUserGroceryItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_updateGroceryItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateGroceryItem(ctx, field)
+func (ec *executionContext) _Mutation_updateUserGroceryItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateUserGroceryItem(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1251,7 +1361,7 @@ func (ec *executionContext) _Mutation_updateGroceryItem(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateGroceryItem(rctx, fc.Args["id"].(string), fc.Args["name"].(*string), fc.Args["quantity"].(*int), fc.Args["purchaseDate"].(*string), fc.Args["expirationDate"].(*string), fc.Args["price"].(*float64), fc.Args["materials"].([]*string), fc.Args["category"].(*string))
+		return ec.resolvers.Mutation().UpdateUserGroceryItem(rctx, fc.Args["userID"].(string), fc.Args["id"].(string), fc.Args["name"].(*string), fc.Args["quantity"].(*int), fc.Args["purchaseDate"].(*string), fc.Args["expirationDate"].(*string), fc.Args["price"].(*float64), fc.Args["materials"].([]*string), fc.Args["category"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1262,10 +1372,10 @@ func (ec *executionContext) _Mutation_updateGroceryItem(ctx context.Context, fie
 	}
 	res := resTmp.(*model.GroceryItem)
 	fc.Result = res
-	return ec.marshalOGroceryItem2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐGroceryItem(ctx, field.Selections, res)
+	return ec.marshalOGroceryItem2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐGroceryItem(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_updateGroceryItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_updateUserGroceryItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1275,6 +1385,8 @@ func (ec *executionContext) fieldContext_Mutation_updateGroceryItem(ctx context.
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_GroceryItem_id(ctx, field)
+			case "userID":
+				return ec.fieldContext_GroceryItem_userID(ctx, field)
 			case "name":
 				return ec.fieldContext_GroceryItem_name(ctx, field)
 			case "quantity":
@@ -1302,15 +1414,15 @@ func (ec *executionContext) fieldContext_Mutation_updateGroceryItem(ctx context.
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateGroceryItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_updateUserGroceryItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_deleteGroceryItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_deleteGroceryItem(ctx, field)
+func (ec *executionContext) _Mutation_deleteUserGroceryItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteUserGroceryItem(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1323,7 +1435,7 @@ func (ec *executionContext) _Mutation_deleteGroceryItem(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteGroceryItem(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Mutation().DeleteUserGroceryItem(rctx, fc.Args["userID"].(string), fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1340,7 +1452,7 @@ func (ec *executionContext) _Mutation_deleteGroceryItem(ctx context.Context, fie
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_deleteGroceryItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_deleteUserGroceryItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -1357,7 +1469,7 @@ func (ec *executionContext) fieldContext_Mutation_deleteGroceryItem(ctx context.
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteGroceryItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_deleteUserGroceryItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1389,7 +1501,7 @@ func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1445,7 +1557,7 @@ func (ec *executionContext) _Query_getUsers(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*model.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getUsers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1465,8 +1577,8 @@ func (ec *executionContext) fieldContext_Query_getUsers(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getGroceryItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getGroceryItem(ctx, field)
+func (ec *executionContext) _Query_getUserGroceryItem(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getUserGroceryItem(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1479,7 +1591,7 @@ func (ec *executionContext) _Query_getGroceryItem(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetGroceryItem(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Query().GetUserGroceryItem(rctx, fc.Args["userID"].(string), fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1490,10 +1602,10 @@ func (ec *executionContext) _Query_getGroceryItem(ctx context.Context, field gra
 	}
 	res := resTmp.(*model.GroceryItem)
 	fc.Result = res
-	return ec.marshalOGroceryItem2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐGroceryItem(ctx, field.Selections, res)
+	return ec.marshalOGroceryItem2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐGroceryItem(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getGroceryItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_getUserGroceryItem(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1503,6 +1615,8 @@ func (ec *executionContext) fieldContext_Query_getGroceryItem(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_GroceryItem_id(ctx, field)
+			case "userID":
+				return ec.fieldContext_GroceryItem_userID(ctx, field)
 			case "name":
 				return ec.fieldContext_GroceryItem_name(ctx, field)
 			case "quantity":
@@ -1530,15 +1644,15 @@ func (ec *executionContext) fieldContext_Query_getGroceryItem(ctx context.Contex
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getGroceryItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_getUserGroceryItem_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getGroceryItems(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getGroceryItems(ctx, field)
+func (ec *executionContext) _Query_getUserGroceryItems(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getUserGroceryItems(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1551,7 +1665,7 @@ func (ec *executionContext) _Query_getGroceryItems(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetGroceryItems(rctx)
+		return ec.resolvers.Query().GetUserGroceryItems(rctx, fc.Args["userID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1562,10 +1676,10 @@ func (ec *executionContext) _Query_getGroceryItems(ctx context.Context, field gr
 	}
 	res := resTmp.([]*model.GroceryItem)
 	fc.Result = res
-	return ec.marshalOGroceryItem2ᚕᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐGroceryItem(ctx, field.Selections, res)
+	return ec.marshalOGroceryItem2ᚕᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐGroceryItem(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getGroceryItems(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_getUserGroceryItems(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1575,6 +1689,8 @@ func (ec *executionContext) fieldContext_Query_getGroceryItems(_ context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_GroceryItem_id(ctx, field)
+			case "userID":
+				return ec.fieldContext_GroceryItem_userID(ctx, field)
 			case "name":
 				return ec.fieldContext_GroceryItem_name(ctx, field)
 			case "quantity":
@@ -1594,6 +1710,17 @@ func (ec *executionContext) fieldContext_Query_getGroceryItems(_ context.Context
 			}
 			return nil, fmt.Errorf("no field named %q was found under type GroceryItem", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getUserGroceryItems_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -3568,6 +3695,11 @@ func (ec *executionContext) _GroceryItem(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "userID":
+			out.Values[i] = ec._GroceryItem_userID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "name":
 			out.Values[i] = ec._GroceryItem_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3637,17 +3769,17 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_loginUser(ctx, field)
 			})
-		case "addGroceryItem":
+		case "addUserGroceryItem":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_addGroceryItem(ctx, field)
+				return ec._Mutation_addUserGroceryItem(ctx, field)
 			})
-		case "updateGroceryItem":
+		case "updateUserGroceryItem":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateGroceryItem(ctx, field)
+				return ec._Mutation_updateUserGroceryItem(ctx, field)
 			})
-		case "deleteGroceryItem":
+		case "deleteUserGroceryItem":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteGroceryItem(ctx, field)
+				return ec._Mutation_deleteUserGroceryItem(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -3732,7 +3864,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getGroceryItem":
+		case "getUserGroceryItem":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -3741,7 +3873,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getGroceryItem(ctx, field)
+				res = ec._Query_getUserGroceryItem(ctx, field)
 				return res
 			}
 
@@ -3751,7 +3883,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getGroceryItems":
+		case "getUserGroceryItems":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -3760,7 +3892,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getGroceryItems(ctx, field)
+				res = ec._Query_getUserGroceryItems(ctx, field)
 				return res
 			}
 
@@ -4506,7 +4638,7 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
-func (ec *executionContext) marshalOGroceryItem2ᚕᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐGroceryItem(ctx context.Context, sel ast.SelectionSet, v []*model.GroceryItem) graphql.Marshaler {
+func (ec *executionContext) marshalOGroceryItem2ᚕᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐGroceryItem(ctx context.Context, sel ast.SelectionSet, v []*model.GroceryItem) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4533,7 +4665,7 @@ func (ec *executionContext) marshalOGroceryItem2ᚕᚖgithubᚗcomᚋlpc0503ᚋG
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOGroceryItem2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐGroceryItem(ctx, sel, v[i])
+			ret[i] = ec.marshalOGroceryItem2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐGroceryItem(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4547,7 +4679,7 @@ func (ec *executionContext) marshalOGroceryItem2ᚕᚖgithubᚗcomᚋlpc0503ᚋG
 	return ret
 }
 
-func (ec *executionContext) marshalOGroceryItem2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐGroceryItem(ctx context.Context, sel ast.SelectionSet, v *model.GroceryItem) graphql.Marshaler {
+func (ec *executionContext) marshalOGroceryItem2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐGroceryItem(ctx context.Context, sel ast.SelectionSet, v *model.GroceryItem) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4618,7 +4750,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4645,7 +4777,7 @@ func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋlpc0503ᚋGrocery�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOUser2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalOUser2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4659,7 +4791,7 @@ func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋlpc0503ᚋGrocery�
 	return ret
 }
 
-func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTackerᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋlpc0503ᚋGroceryᚑTrackerᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

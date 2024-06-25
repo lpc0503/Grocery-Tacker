@@ -6,6 +6,7 @@ type User {
 # Grocery Item type and related operations
 type GroceryItem {
   id: ID!
+  userID: String!
   name: String!
   quantity: Int
   purchaseDate: String
@@ -20,15 +21,15 @@ type GroceryItem {
 type Query {
   getUser(id: ID!): User
   getUsers: [User]
-  getGroceryItem(id: ID!): GroceryItem
-  getGroceryItems: [GroceryItem]
+  getUserGroceryItem(userID: String!, id: ID!): GroceryItem
+  getUserGroceryItems(userID: String!): [GroceryItem]
 }
 
 # Mutation type for data operations
 type Mutation {
   registerUser(userID: String!): User
   loginUser(userID: String!): User # Returns a JWT token
-  addGroceryItem(name: String!, quantity: Int, purchaseDate: String, expirationDate: String, price: Float, materials: [String], category: String): GroceryItem
-  updateGroceryItem(id: ID!, name: String, quantity: Int, purchaseDate: String, expirationDate: String, price: Float, materials: [String], category: String): GroceryItem
-  deleteGroceryItem(id: ID!): Boolean!
+  addUserGroceryItem(userID: String!, name: String!, quantity: Int, purchaseDate: String, expirationDate: String, price: Float, materials: [String], category: String): GroceryItem
+  updateUserGroceryItem(userID: String!, id: ID!, name: String, quantity: Int, purchaseDate: String, expirationDate: String, price: Float, materials: [String], category: String): GroceryItem
+  deleteUserGroceryItem(userID: String!, id: ID!): Boolean!
 }

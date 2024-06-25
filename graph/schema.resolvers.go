@@ -14,7 +14,6 @@ import (
 
 // RegisterUser is the resolver for the registerUser field.
 func (r *mutationResolver) RegisterUser(ctx context.Context, userID string) (*model.User, error) {
-
 	for _, user := range r.users {
 		if user.UserID == userID {
 			return nil, errors.New("User exist")
@@ -38,10 +37,11 @@ func (r *mutationResolver) LoginUser(ctx context.Context, userID string) (*model
 	return nil, errors.New("invalid credentials")
 }
 
-// AddGroceryItem is the resolver for the addGroceryItem field.
-func (r *mutationResolver) AddGroceryItem(ctx context.Context, name string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) (*model.GroceryItem, error) {
+// AddUserGroceryItem is the resolver for the addUserGroceryItem field.
+func (r *mutationResolver) AddUserGroceryItem(ctx context.Context, userID string, name string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) (*model.GroceryItem, error) {
 	item := &model.GroceryItem{
-		ID:             strconv.Itoa(len(r.groceryItems) + 1),
+		ID:             strconv.Itoa(len(r.groceryItems[userID]) + 1),
+		UserID:         userID,
 		Name:           name,
 		Quantity:       quantity,
 		PurchaseDate:   purchaseDate,
@@ -50,13 +50,18 @@ func (r *mutationResolver) AddGroceryItem(ctx context.Context, name string, quan
 		Materials:      materials,
 		Category:       category,
 	}
-	r.groceryItems = append(r.groceryItems, item)
+
+	if _, ok := r.groceryItems[userID]; !ok {
+		r.groceryItems[userID] = []*model.GroceryItem{}
+	}
+
+	r.groceryItems[userID] = append(r.groceryItems[userID], item)
 	return item, nil
 }
 
-// UpdateGroceryItem is the resolver for the updateGroceryItem field.
-func (r *mutationResolver) UpdateGroceryItem(ctx context.Context, id string, name *string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) (*model.GroceryItem, error) {
-	for _, item := range r.groceryItems {
+// UpdateUserGroceryItem is the resolver for the updateUserGroceryItem field.
+func (r *mutationResolver) UpdateUserGroceryItem(ctx context.Context, userID string, id string, name *string, quantity *int, purchaseDate *string, expirationDate *string, price *float64, materials []*string, category *string) (*model.GroceryItem, error) {
+	for _, item := range r.groceryItems[userID] {
 		if item.ID == id {
 			if name != nil {
 				item.Name = *name
@@ -85,11 +90,17 @@ func (r *mutationResolver) UpdateGroceryItem(ctx context.Context, id string, nam
 	return nil, errors.New("item not found")
 }
 
-// DeleteGroceryItem is the resolver for the deleteGroceryItem field.
-func (r *mutationResolver) DeleteGroceryItem(ctx context.Context, id string) (bool, error) {
-	for i, item := range r.groceryItems {
+// DeleteUserGroceryItem is the resolver for the deleteUserGroceryItem field.
+func (r *mutationResolver) DeleteUserGroceryItem(ctx context.Context, userID string, id string) (bool, error) {
+
+	if len(r.groceryItems[userID]) == 0 {
+		return true, nil
+	}
+
+	for i, item := range r.groceryItems[userID] {
+		println(item.ID)
 		if item.ID == id {
-			r.groceryItems = append(r.groceryItems[:i], r.groceryItems[i+1:]...)
+			r.groceryItems[userID] = append(r.groceryItems[userID][:i], r.groceryItems[userID][i+1:]...)
 			return true, nil
 		}
 	}
@@ -111,19 +122,23 @@ func (r *queryResolver) GetUsers(ctx context.Context) ([]*model.User, error) {
 	return r.users, nil
 }
 
-// GetGroceryItem is the resolver for the getGroceryItem field.
-func (r *queryResolver) GetGroceryItem(ctx context.Context, id string) (*model.GroceryItem, error) {
-	for _, item := range r.groceryItems {
+// GetUserGroceryItem is the resolver for the getUserGroceryItem field.
+func (r *queryResolver) GetUserGroceryItem(ctx context.Context, userID string, id string) (*model.GroceryItem, error) {
+	for _, item := range r.groceryItems[userID] {
+
 		if item.ID == id {
+
 			return item, nil
 		}
+
 	}
-	return nil, errors.New("item not found")
+	return nil, errors.New("Item not found")
 }
 
-// GetGroceryItems is the resolver for the getGroceryItems field.
-func (r *queryResolver) GetGroceryItems(ctx context.Context) ([]*model.GroceryItem, error) {
-	return r.groceryItems, nil
+// GetUserGroceryItems is the resolver for the getUserGroceryItems field.
+func (r *queryResolver) GetUserGroceryItems(ctx context.Context, userID string) ([]*model.GroceryItem, error) {
+	//TODO check user status
+	return r.groceryItems[userID], nil
 }
 
 // Mutation returns MutationResolver implementation.
