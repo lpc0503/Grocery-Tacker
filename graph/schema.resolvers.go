@@ -93,13 +93,10 @@ func (r *mutationResolver) UpdateUserGroceryItem(ctx context.Context, userID str
 // DeleteUserGroceryItem is the resolver for the deleteUserGroceryItem field.
 func (r *mutationResolver) DeleteUserGroceryItem(ctx context.Context, userID string, id string) (bool, error) {
 
-	if len(r.groceryItems[userID]) == 0 {
-		return true, nil
-	}
-
 	for i, item := range r.groceryItems[userID] {
 		println(item.ID)
 		if item.ID == id {
+			println("in")
 			r.groceryItems[userID] = append(r.groceryItems[userID][:i], r.groceryItems[userID][i+1:]...)
 			return true, nil
 		}

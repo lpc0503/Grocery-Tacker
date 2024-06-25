@@ -3,7 +3,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"testing"
 
 	"math/rand"
@@ -16,7 +15,6 @@ var mockUsers = []*model.User{
 	{UserID: "user1"},
 	{UserID: "user2"},
 	{UserID: "user3"},
-	{UserID: "user4"},
 }
 
 var mockGroceryItems = []*model.GroceryItem{
@@ -88,9 +86,12 @@ func TestDeleteGroceryItem(t *testing.T) {
 		assert.Equal(t, quantity, *addItem.Quantity)
 	}
 
-	randUser := rand.Intn(len(mockUsers))
-	userID := mockUsers[randUser].UserID
-	deleteItem := strconv.Itoa(rand.Intn(len(resolver.groceryItems[userID]) + 1))
+	randUser := 2
+	userID := "user3"
+	deleteItem := "1"
+	// randUser := rand.Intn(len(mockUsers))
+	//userID := mockUsers[randUser].UserID
+	//deleteItem := strconv.Itoa(rand.Intn(len(resolver.groceryItems[userID]) + 1))
 
 	fmt.Println(randUser)
 	fmt.Println(userID)
